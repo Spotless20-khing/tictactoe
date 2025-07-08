@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spotless Games</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      color: wheat;
+      background: url('background.jpg') center center / cover no-repeat;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .container {
+      background-color: rgba(0, 0, 0, 0.6); /* Optional: adds contrast over image */
+      padding: 2rem;
+      border-radius: 10px;
+    }
+
+    h1 {
+      font-size: 3rem;
+      margin-bottom: 0.5rem;
+    }
+
+    p {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+
+    small {
+      display: block;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      opacity: 0.8;
+    }
+
+    .button-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .game-button {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      font-size: 1rem;
+      color: #000;
+      background-color: #ffd700;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background-color 0.3s ease;
+    }
+
+    .game-button:hover {
+      background-color: #fffacd;
+    }
+  </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Spotless Games</h1>
+        <p>Welcome to Spotless Games!</p>
+        <small>Click a button to start playing</small>
+        <div class="button-container">
+            <a href="tictactoe_firebase.html" class="game-button">Tic-Tac-Toe (advanced)</a>
+            <a href="tictactoe_firebase.html" class="game-button">Tik-Tac-Toe (simple)</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic-Tac-Toe Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Variables for Theming */
+        :root {
+            /* Dark Mode Defaults */
+            --bg-primary: #1a202c;
+            --bg-secondary: #2d3748;
+            --bg-tertiary: #4a5568;
+            --text-primary: #e2e8f0;
+            --text-secondary: #cbd5e0;
+            --accent-blue: #63b3ed;
+            --accent-blue-hover: #4299e1;
+            --accent-blue-active: #2b6cb0;
+            --accent-red: #f56565;
+            --accent-green: #48bb78;
+            --accent-purple: #805ad5;
+            --accent-purple-hover: #6b46c1;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --border-color: #63b3ed;
+        }
+
+        body.light-mode {
+            /* Light Mode Overrides */
+            --bg-primary: #f7fafc;
+            --bg-secondary: #edf2f7;
+            --bg-tertiary: #e2e8f0;
+            --text-primary: #2d3748;
+            --text-secondary: #4a5568;
+            --accent-blue: #3182ce;
+            --accent-blue-hover: #2b6cb0;
+            --accent-blue-active: #2c5282;
+            --accent-red: #e53e3e;
+            --accent-green: #38a169;
+            --accent-purple: #6b46c1;
+            --accent-purple-hover: #553c9a;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --border-color: #3182ce;
+        }
+
+        /* Basic Reset & Font */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Changed to space-between for footer */
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            padding: 20px;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+            transition: background-color 0.3s ease;
+        }
+
+        /* Main Layout Container */
+        .main-layout {
+            display: flex;
+            flex-direction: row; /* Default to row for wider screens */
+            gap: 20px;
+            align-items: flex-start; /* Align items to the top */
+            max-width: 1200px; /* Max width for the entire layout */
+            width: 100%;
+            justify-content: center;
+            flex-grow: 1; /* Allow main content to grow and push footer down */
+        }
+
+        /* Side Panels */
+        .left-panel, .right-panel {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            box-shadow: 0 5px 10px var(--shadow-color);
+            padding: 20px;
+            flex-shrink: 0; /* Prevent shrinking */
+            width: 250px; /* Fixed width for panels */
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+            text-align: center;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Game Container (Center) */
+        .game-container {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            box-shadow: 0 10px 15px var(--shadow-color);
+            padding: 30px;
+            text-align: center;
+            flex-grow: 1; /* Allow it to take available space */
+            width: auto; /* Let JS control width */
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: var(--accent-blue);
+        }
+
+        /* Player Info & Stats */
+        .player-info {
+            background-color: var(--bg-tertiary);
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            width: 100%; /* Fill panel width */
+        }
+
+        .player-info label {
+            color: var(--text-primary);
+            font-weight: bold;
+        }
+
+        .player-info input[type="text"] {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            width: 100%;
+            max-width: 200px;
+            margin-top: 10px;
+            font-size: 1rem;
+            text-align: center;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .player-info input[type="text"]:focus {
+            outline: none;
+            border-color: var(--accent-blue-hover);
+            /* Using rgba with CSS variables for RGB values is tricky without JS, hardcoding for simplicity */
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+        }
+
+        .stats {
+            margin-top: 10px;
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+        }
+
+        .stats span {
+            font-weight: bold;
+            color: var(--accent-green);
+        }
+
+        /* Game Board */
+        .board {
+            display: grid;
+            gap: 8px; /* Keep gap constant */
+            margin: 20px auto;
+            background-color: var(--bg-tertiary);
+            border-radius: 8px;
+            overflow: hidden; /* Ensures rounded corners apply to cells */
+            max-width: 95vw; /* Ensure responsiveness for very large boards on small screens */
+            height: auto; /* Allow height to adjust */
+            transition: background-color 0.3s ease;
+        }
+
+        .cell {
+            background-color: var(--bg-secondary);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out;
+            border-radius: 6px; /* Rounded corners for cells */
+            color: var(--text-secondary);
+        }
+
+        .cell:hover {
+            background-color: var(--bg-tertiary);
+            transform: scale(1.02);
+        }
+
+        .cell.x {
+            color: var(--accent-red);
+        }
+
+        .cell.o {
+            color: var(--accent-green);
+        }
+
+        /* Status Message */
+        .message {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            min-height: 30px; /* Prevent layout shift */
+            color: var(--text-primary);
+        }
+
+        /* Buttons & Controls */
+        .controls-group {
+            display: flex;
+            flex-direction: column; /* Stack buttons vertically in side panel */
+            gap: 15px;
+            width: 100%; /* Fill panel width */
+        }
+
+        .btn {
+            background-color: var(--accent-blue);
+            color: var(--bg-primary);
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out, transform 0.1s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-shadow: 0 4px 6px var(--shadow-color);
+            position: relative;
+            overflow: hidden;
+            width: 100%; /* Fill parent width */
+        }
+
+        .btn:hover {
+            background-color: var(--accent-blue-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px var(--shadow-color);
+        }
+
+        .btn:active {
+            background-color: var(--accent-blue-active);
+            transform: translateY(0);
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+
+        /* Button ripple effect */
+        .btn::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: 50%;
+            opacity: 0;
+            transform: scale(1) translate(-50%, -50%);
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+        }
+
+        .btn:active::after {
+            transform: scale(100) translate(-50%, -50%);
+            opacity: 1;
+            transition: 0s;
+        }
+
+        /* AI Level Selector */
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            width: 100%; /* Fill parent width */
+            justify-content: space-between; /* Space out label and select */
+        }
+
+        .control-group select {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            padding: 8px 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            cursor: pointer;
+            outline: none;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .control-group select:focus {
+            border-color: var(--accent-blue-hover);
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+        }
+
+        /* Theme Toggle Button (Icon Button) */
+        .theme-toggle-btn {
+            background-color: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 10px; /* Adjusted padding for icon */
+            border-radius: 50%; /* Make it round */
+            font-size: 1.5rem; /* Icon size */
+            cursor: pointer;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            width: 50px; /* Fixed width for round button */
+            height: 50px; /* Fixed height for round button */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 2px 4px var(--shadow-color);
+        }
+        .theme-toggle-btn:hover {
+            background-color: var(--accent-blue-hover);
+            color: white;
+        }
+        .theme-toggle-btn svg {
+            width: 100%;
+            height: 100%;
+            fill: currentColor; /* Use button's text color for SVG */
+        }
+
+
+        /* Message Box Styling */
+        .message-box-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+
+        .message-box-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .message-box {
+            background-color: var(--bg-secondary);
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 20px var(--shadow-color);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease-in-out, background-color 0.3s ease;
+        }
+
+        .message-box-overlay.visible .message-box {
+            transform: translateY(0);
+        }
+
+        .message-box h3 {
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+            color: var(--accent-blue);
+        }
+
+        .message-box p {
+            font-size: 1.1rem;
+            margin-bottom: 25px;
+            color: var(--text-primary);
+        }
+
+        .message-box-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap; /* Allow buttons to wrap */
+        }
+
+        .message-box-buttons button {
+            background-color: var(--accent-green);
+            color: var(--bg-primary);
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .message-box-buttons button:hover {
+            background-color: var(--accent-green); /* Darker green */
+        }
+
+        .message-box-buttons button.secondary {
+            background-color: var(--accent-blue);
+        }
+
+        .message-box-buttons button.secondary:hover {
+            background-color: var(--accent-blue-hover);
+        }
+
+        /* Mobile-specific layout and toggles */
+        .mobile-header-controls {
+            display: none; /* Hidden by default */
+            width: 100%;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            margin-bottom: 10px;
+        }
+
+        .mobile-menu-btn, .mobile-close-btn {
+            background: none;
+            border: none;
+            color: var(--text-primary);
+            font-size: 2rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 5px;
+            transition: background-color 0.2s ease;
+        }
+
+        .mobile-menu-btn:hover, .mobile-close-btn:hover {
+            background-color: var(--bg-tertiary);
+        }
+
+        .mobile-close-btn {
+            display: none; /* Hidden until menu is open */
+        }
+
+        .side-panels-wrapper {
+            display: flex;
+            flex-direction: row; /* Default for desktop */
+            gap: 20px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* Footer Styles */
+        .footer {
+            margin-top: 40px; /* Space above the footer */
+            padding: 20px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            background-color: var(--bg-secondary);
+            width: 100%;
+            box-shadow: 0 -2px 5px var(--shadow-color);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .main-layout {
+                flex-direction: column; /* Stack panels vertically on smaller screens */
+                align-items: center;
+                gap: 0; /* Remove gap when stacked */
+            }
+
+            .mobile-header-controls {
+                display: flex; /* Show mobile controls */
+            }
+
+            .side-panels-wrapper {
+                flex-direction: column; /* Stack side panels */
+                display: none; /* Hidden by default on mobile */
+                width: 100%;
+                gap: 20px;
+                /* Position overlay for panels when open */
+                position: fixed;
+                top: 0;
+                left: 0;
+                height: 100%;
+                background-color: var(--bg-primary); /* Use primary background for full screen overlay */
+                z-index: 999; /* Below message box, above game */
+                overflow-y: auto; /* Enable scrolling if content overflows */
+                padding-top: 60px; /* Space for the mobile header */
+                justify-content: flex-start; /* Align content to top */
+            }
+
+            .side-panels-wrapper.visible {
+                display: flex; /* Show when toggled */
+            }
+
+            .left-panel, .right-panel {
+                width: 90%; /* Take more width on small screens */
+                max-width: 450px; /* Limit max width */
+                box-shadow: 0 5px 10px var(--shadow-color); /* Add shadow back */
+            }
+
+            .game-container {
+                width: 90%;
+                max-width: 450px;
+                margin-top: 20px; /* Space from panels if they are visible */
+            }
+            h1 {
+                font-size: 2rem;
+            }
+            .message {
+                font-size: 1.2rem;
+            }
+            .board {
+                max-width: 95vw;
+                height: auto;
+            }
+            .cell {
+                min-width: 60px;
+                min-height: 60px;
+            }
+            .btn {
+                font-size: 1rem;
+                padding: 10px 20px;
+            }
+            .controls-group, .control-group {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+            .control-group select, .player-info input[type="text"] {
+                width: 100%;
+                max-width: 250px;
+            }
+
+            .footer {
+                margin-top: 20px; /* Less margin on mobile */
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-layout">
+        <div class="mobile-header-controls">
+            <button class="mobile-menu-btn" id="mobile-menu-btn">☰</button>
+            <h2 style="font-size: 1.8rem; color: var(--text-primary);">Tic-Tac-Toe</h2>
+            <button class="mobile-close-btn" id="mobile-close-btn">✕</button>
+        </div>
+
+        <div class="side-panels-wrapper" id="side-panels-wrapper">
+            <div class="left-panel">
+                <div class="player-info">
+                    <label for="player-name-input">Your Name:</label>
+                    <input type="text" id="player-name-input" placeholder="Enter your name" value="Player">
+                    <div class="stats" id="player-stats">
+                        Wins: <span>0</span> | Losses: <span>0</span> | Draws: <span>0</span>
+                    </div>
+                </div>
+                <button class="theme-toggle-btn" id="theme-toggle-btn">
+                    <svg id="sun-icon" style="display: none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.472 4.547a.75.75 0 0 1 1.06 0.943l-1.472 1.472a.75.75 0 0 1-.943-1.06l1.472-1.472ZM4.5 12a.75.75 0 0 1-.75-.75h-2.25a.75.75 0 0 1 0-1.5H3.75A.75.75 0 0 1 4.5 12ZM12 18.75a.75.75 0 0 1-.75-.75v-2.25a.75.75 0 0 1 1.5 0v2.25a.75.75 0 0 1-.75.75ZM16.528 19.453a.75.75 0 0 1-1.06 0.943l1.472 1.472a.75.75 0 0 1 .943-1.06l-1.472-1.472ZM18.75 12a.75.75 0 0 1 .75-.75h2.25a.75.75 0 0 1 0-1.5h-2.25a.75.75 0 0 1-.75.75ZM16.528 4.547a.75.75 0 0 1 0-1.06l1.472-1.472a.75.75 0 0 1 1.06 0.943l-1.472 1.472ZM12 7.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Z" />
+                    </svg>
+                    <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9c.441 0 .873.067 1.288.192a.75.75 0 0 1 .819.162.75.75 0 0 0 .655-.196 2.25 2.25 0 0 1 2.366-3.081q.03-.028.062-.058A8.967 8.967 0 0 0 18 9a9 9 0 0 0-8.472-7.282Z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+
+            <div class="game-container">
+                <h1>Tic-Tac-Toe</h1>
+                <div class="message" id="game-message">X's Turn</div>
+                <div class="board" id="game-board">
+                    </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="controls-group">
+                    <button class="btn" id="new-game-btn">New Game</button>
+                    <button class="btn" id="toggle-mode-btn">Play Against AI</button>
+                    <div class="control-group" id="ai-level-control">
+                        <label for="ai-level-select">AI Level:</label>
+                        <select id="ai-level-select">
+                            </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="message-box-overlay" id="message-box-overlay">
+        <div class="message-box">
+            <h3 id="message-box-title"></h3>
+            <p id="message-box-content"></p>
+            <div class="message-box-buttons" id="message-box-buttons">
+                <button id="message-box-ok-btn">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2023 Khing Spotless. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // --- DOM Elements ---
+        const boardElement = document.getElementById('game-board');
+        const messageElement = document.getElementById('game-message');
+        const newGameBtn = document.getElementById('new-game-btn');
+        const toggleModeBtn = document.getElementById('toggle-mode-btn');
+        const playerNameInput = document.getElementById('player-name-input');
+        const playerStatsElement = document.getElementById('player-stats');
+        const aiLevelSelect = document.getElementById('ai-level-select');
+        const themeToggleBtn = document.getElementById('theme-toggle-btn');
+
+        // Mobile Layout Elements
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileCloseBtn = document.getElementById('mobile-close-btn');
+        const sidePanelsWrapper = document.getElementById('side-panels-wrapper');
+        // No need for direct references to leftPanel, rightPanel as they are children of sidePanelsWrapper
+
+        // Message Box Elements
+        const messageBoxOverlay = document.getElementById('message-box-overlay');
+        const messageBoxTitle = document.getElementById('message-box-title');
+        const messageBoxContent = document.getElementById('message-box-content');
+        const messageBoxButtonsContainer = document.getElementById('message-box-buttons');
+
+        // Theme Icons
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+
+        // --- Game State Variables ---
+        let board = []; // Will be dynamically sized
+        let currentPlayer = 'X';
+        let gameActive = true;
+        let gameMode = 'ai';
+        let playerName = 'Player';
+        let aiLevel = 1;
+        let boardSize = 3; // Will be determined by aiLevel
+        const WIN_CONDITION_LENGTH = 3; // How many in a row to win (e.g., 3 for standard Tic-Tac-Toe)
+        const BASE_CELL_SIZE_PX = 110; // Base size for a 3x3 cell
+        const CELL_SIZE_DECREMENT_PER_LEVEL = 10; // How much smaller cells get for larger boards
+
+        let stats = { wins: 0, losses: 0, draws: 0 };
+        let isMobileMenuOpen = false; // State for mobile panel visibility
+
+        // --- Utility Functions ---
+
+        /**
+         * Displays a custom message box instead of alert().
+         * @param {string} title - The title of the message box.
+         * @param {string} message - The content message.
+         * @param {Array<Object>} [buttons] - Optional array of button configurations.
+         * Each object: { text: string, className: string, onClick: Function }
+         */
+        function showMessageBox(title, message, buttons = [{ text: 'OK', className: '', onClick: hideMessageBox }]) {
+            messageBoxTitle.textContent = title;
+            messageBoxContent.textContent = message;
+
+            messageBoxButtonsContainer.innerHTML = '';
+
+            buttons.forEach(btnConfig => {
+                const button = document.createElement('button');
+                button.textContent = btnConfig.text;
+                button.className = btnConfig.className;
+                button.addEventListener('click', () => {
+                    btnConfig.onClick();
+                    hideMessageBox();
+                });
+                messageBoxButtonsContainer.appendChild(button);
+            });
+
+            messageBoxOverlay.classList.add('visible');
+        }
+
+        /**
+         * Hides the custom message box.
+         */
+        function hideMessageBox() {
+            messageBoxOverlay.classList.remove('visible');
+        }
+
+        /**
+         * Updates the displayed player stats.
+         */
+        function updateStatsDisplay() {
+            playerStatsElement.querySelector('span:nth-child(1)').textContent = stats.wins;
+            playerStatsElement.querySelector('span:nth-child(2)').textContent = stats.losses;
+            playerStatsElement.querySelector('span:nth-child(3)').textContent = stats.draws;
+        }
+
+        /**
+         * Calculates AI mistake chance based on level.
+         * @param {number} level - AI level (1-20).
+         * @returns {number} - Probability of making a random move (0.0 to 1.0).
+         */
+        function getMistakeChance(level) {
+            return Math.max(0, 0.5 - (level - 1) * (0.5 / 19));
+        }
+
+        /**
+         * Determines the board size based on the AI level.
+         */
+        function getBoardSizeForLevel(level) {
+            if (level >= 1 && level <= 5) return 3;
+            if (level >= 6 && level <= 10) return 4;
+            if (level >= 11 && level <= 15) return 5;
+            if (level >= 16 && level <= 20) return 6;
+            return 3; // Default
+        }
+
+        /**
+         * Calculates the cell size based on the board size.
+         */
+        function getCellSizeForBoard(currentBoardSize) {
+            return BASE_CELL_SIZE_PX - (currentBoardSize - 3) * CELL_SIZE_DECREMENT_PER_LEVEL;
+        }
+
+        /**
+         * Applies dynamic cell and board sizing based on current boardSize.
+         */
+        function applyDynamicBoardStyles() {
+            const currentCellSize = getCellSizeForBoard(boardSize);
+            const gap = 8; // Consistent gap in pixels
+            const boardDimension = (currentCellSize * boardSize) + (gap * (boardSize - 1));
+
+            boardElement.style.width = `${boardDimension}px`;
+            boardElement.style.height = `${boardDimension}px`;
+            boardElement.style.gridTemplateColumns = `repeat(${boardSize}, ${currentCellSize}px)`;
+            boardElement.style.gridTemplateRows = `repeat(${boardSize}, ${currentCellSize}px)`;
+
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.style.fontSize = `${currentCellSize * 0.6}px`;
+            });
+
+            const gameContainer = document.querySelector('.game-container');
+            gameContainer.style.maxWidth = `${boardDimension + 60}px`;
+        }
+
+        // --- Game Logic ---
+
+        /**
+         * Initializes or resets the game state.
+         */
+        function initGame() {
+            boardSize = getBoardSizeForLevel(aiLevel);
+            board = Array(boardSize * boardSize).fill('');
+            currentPlayer = 'X';
+            gameActive = true;
+            messageElement.textContent = `${playerName}'s Turn (X)`;
+
+            boardElement.innerHTML = '';
+            for (let i = 0; i < boardSize * boardSize; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.cellIndex = i;
+                cell.addEventListener('click', handleCellClick, { once: true });
+                boardElement.appendChild(cell);
+            }
+
+            applyDynamicBoardStyles();
+
+            // AI will only move if it's its turn (O) and in AI mode
+            // Since initGame always sets currentPlayer to 'X', AI won't move first on a fresh game.
+            if (gameMode === 'ai' && currentPlayer === 'O') {
+                setTimeout(aiMove, 500);
+            }
+        }
+
+        /**
+         * Handles a click event on a game cell.
+         * @param {Event} event - The click event object.
+         */
+        function handleCellClick(event) {
+            const clickedCell = event.target;
+            const clickedCellIndex = parseInt(clickedCell.dataset.cellIndex);
+
+            // Prevent moves if game is not active or if mobile menu is open
+            if (board[clickedCellIndex] !== '' || !gameActive || isMobileMenuOpen || (gameMode === 'ai' && currentPlayer === 'O')) {
+                return;
+            }
+
+            board[clickedCellIndex] = currentPlayer;
+            clickedCell.textContent = currentPlayer;
+            clickedCell.classList.add(currentPlayer.toLowerCase());
+
+            if (checkWin(board, currentPlayer, boardSize, WIN_CONDITION_LENGTH)) {
+                messageElement.textContent = `${currentPlayer} Wins!`;
+                gameActive = false;
+                if (gameMode === 'ai') {
+                    if (currentPlayer === 'X') stats.wins++;
+                    else stats.losses++;
+                }
+                updateStatsDisplay();
+
+                const winMessage = `${currentPlayer === 'X' ? playerName : 'AI (O)'} has won the game!`;
+                const buttons = [
+                    { text: 'Replay', className: '', onClick: initGame }
+                ];
+                if (gameMode === 'ai' && currentPlayer === 'X' && aiLevel < 20) {
+                    buttons.push({ text: 'Next Level', className: 'secondary', onClick: () => { aiLevel++; aiLevelSelect.value = aiLevel; initGame(); } });
+                }
+                showMessageBox('Game Over!', winMessage, buttons);
+                return;
+            }
+
+            if (checkDraw(board)) {
+                messageElement.textContent = `It's a Draw!`;
+                gameActive = false;
+                if (gameMode === 'ai') {
+                    stats.draws++;
+                }
+                updateStatsDisplay();
+                setTimeout(() => {
+                    hideMessageBox();
+                    initGame();
+                }, 2000);
+                return;
+            }
+
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            messageElement.textContent = `${currentPlayer}'s Turn`;
+
+            if (gameMode === 'ai' && currentPlayer === 'O' && gameActive) {
+                setTimeout(aiMove, 700);
+            }
+        }
+
+        /**
+         * Checks if a specific player has won on a given board state for any N x N board.
+         * Checks horizontal, vertical, and diagonal lines for WIN_CONDITION_LENGTH consecutive marks.
+         */
+        function checkWin(currentBoard, player, currentBoardSize, winLength) {
+            const getCell = (r, c) => currentBoard[r * currentBoardSize + c];
+
+            // Check horizontal
+            for (let r = 0; r < currentBoardSize; r++) {
+                for (let c = 0; c <= currentBoardSize - winLength; c++) {
+                    let count = 0;
+                    for (let k = 0; k < winLength; k++) {
+                        if (getCell(r, c + k) === player) {
+                            count++;
+                        } else {
+                            break;
+                        }
+                    }
+                    if (count === winLength) return true;
+                }
+            }
+
+            // Check vertical
+            for (let c = 0; c < currentBoardSize; c++) {
+                for (let r = 0; r <= currentBoardSize - winLength; r++) {
+                    let count = 0;
+                    for (let k = 0; k < winLength; k++) {
+                        if (getCell(r + k, c) === player) {
+                            count++;
+                        } else {
+                            break;
+                        }
+                    }
+                    if (count === winLength) return true;
+                }
+            }
+
+            // Check diagonal (top-left to bottom-right)
+            for (let r = 0; r <= currentBoardSize - winLength; r++) {
+                for (let c = 0; c <= currentBoardSize - winLength; c++) {
+                    let count = 0;
+                    for (let k = 0; k < winLength; k++) {
+                        if (getCell(r + k, c + k) === player) {
+                            count++;
+                        } else {
+                            break;
+                        }
+                    }
+                    if (count === winLength) return true;
+                }
+            }
+
+            // Check diagonal (top-right to bottom-left)
+            for (let r = 0; r <= currentBoardSize - winLength; r++) {
+                for (let c = winLength - 1; c < currentBoardSize; c++) {
+                    let count = 0;
+                    for (let k = 0; k < winLength; k++) {
+                        if (getCell(r + k, c - k) === player) {
+                            count++;
+                        } else {
+                            break;
+                        }
+                    }
+                    if (count === winLength) return true;
+                }
+            }
+
+            return false;
+        }
+
+        /**
+         * Checks if the game is a draw (all cells filled, no winner).
+         */
+        function checkDraw(currentBoard) {
+            return currentBoard.every(cell => cell !== '');
+        }
+
+        /**
+         * Implements the AI's move logic.
+         * AI plays as 'O'.
+         */
+        function aiMove() {
+            if (!gameActive) return;
+
+            const availableCells = [];
+            for (let i = 0; i < board.length; i++) {
+                if (board[i] === '') {
+                    availableCells.push(i);
+                }
+            }
+
+            if (availableCells.length === 0) return;
+
+            let bestMove = -1;
+            const currentMistakeChance = getMistakeChance(aiLevel);
+
+            if (Math.random() < currentMistakeChance) {
+                const randomIndex = Math.floor(Math.random() * availableCells.length);
+                bestMove = availableCells[randomIndex];
+            } else {
+                // Strategy 1: Check if AI can win in the next move (play as 'O')
+                for (let i = 0; i < availableCells.length; i++) {
+                    const tempBoard = [...board];
+                    tempBoard[availableCells[i]] = 'O';
+                    if (checkWin(tempBoard, 'O', boardSize, WIN_CONDITION_LENGTH)) {
+                        bestMove = availableCells[i];
+                        break;
+                    }
+                }
+
+                // Strategy 2: Check if Player 'X' can win and block them
+                if (bestMove === -1) {
+                    for (let i = 0; i < availableCells.length; i++) {
+                        const tempBoard = [...board];
+                        tempBoard[availableCells[i]] = 'X';
+                        if (checkWin(tempBoard, 'X', boardSize, WIN_CONDITION_LENGTH)) {
+                            bestMove = availableCells[i];
+                            break;
+                        }
+                    }
+                }
+
+                // Strategy 3: If no immediate win or block, pick a random available cell
+                if (bestMove === -1) {
+                    const randomIndex = Math.floor(Math.random() * availableCells.length);
+                    bestMove = availableCells[randomIndex];
+                }
+            }
+
+            const cellToClick = boardElement.querySelector(`[data-cell-index="${bestMove}"]`);
+            if (cellToClick) {
+                cellToClick.click();
+            }
+        }
+
+        /**
+         * Populates the AI level select dropdown.
+         */
+        function populateAILevelSelect() {
+            aiLevelSelect.innerHTML = '';
+            for (let i = 1; i <= 20; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `Level ${i}`;
+                aiLevelSelect.appendChild(option);
+            }
+            aiLevelSelect.value = aiLevel;
+        }
+
+        // --- Theme Toggle Logic ---
+        function updateThemeIcons() {
+            if (document.body.classList.contains('light-mode')) {
+                sunIcon.style.display = 'block';
+                moonIcon.style.display = 'none';
+            } else {
+                sunIcon.style.display = 'none';
+                moonIcon.style.display = 'block';
+            }
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-mode');
+            if (document.body.classList.contains('light-mode')) {
+                localStorage.setItem('theme', 'light');
+            } else {
+                localStorage.setItem('theme', 'dark');
+            }
+            updateThemeIcons(); // Update icons after toggling theme
+        }
+
+        function loadThemePreference() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-mode');
+            } else {
+                document.body.classList.remove('light-mode');
+            }
+            updateThemeIcons(); // Set initial icon based on loaded theme
+        }
+
+        // --- Mobile Menu Toggle Logic ---
+        function toggleMobileMenu() {
+            isMobileMenuOpen = !isMobileMenuOpen;
+            if (isMobileMenuOpen) {
+                sidePanelsWrapper.classList.add('visible');
+                mobileMenuBtn.style.display = 'none';
+                mobileCloseBtn.style.display = 'block';
+                gameActive = false; // Temporarily disable game when menu is open
+            } else {
+                sidePanelsWrapper.classList.remove('visible');
+                mobileMenuBtn.style.display = 'block';
+                mobileCloseBtn.style.display = 'none';
+                gameActive = true; // Re-enable game when menu is closed
+            }
+        }
+
+        function handleResize() {
+            // If screen is wide enough, ensure panels are always visible and mobile controls are hidden
+            if (window.innerWidth > 768) {
+                sidePanelsWrapper.classList.add('visible'); // Ensure panels are visible on desktop
+                mobileMenuBtn.style.display = 'none';
+                mobileCloseBtn.style.display = 'none';
+                isMobileMenuOpen = false; // Reset mobile menu state
+                gameActive = true; // Ensure game is active on desktop
+            } else {
+                // On mobile, control visibility via toggle state
+                if (isMobileMenuOpen) {
+                     sidePanelsWrapper.classList.add('visible');
+                     mobileMenuBtn.style.display = 'none';
+                     mobileCloseBtn.style.display = 'block';
+                } else {
+                     sidePanelsWrapper.classList.remove('visible');
+                     mobileMenuBtn.style.display = 'block';
+                     mobileCloseBtn.style.display = 'none';
+                }
+            }
+        }
+
+
+        // --- Event Handlers ---
+
+        function handlePlayerNameChange(event) {
+            playerName = event.target.value || 'Player';
+            messageElement.textContent = `${playerName}'s Turn (X)`;
+        }
+
+        function handleAILevelChange(event) {
+            aiLevel = parseInt(event.target.value);
+            showMessageBox('AI Level Changed', `AI difficulty set to Level ${aiLevel}. Board size will adapt.`);
+            initGame();
+        }
+
+        function toggleGameMode() {
+            // Toggle the gameMode state
+            if (gameMode === 'ai') {
+                gameMode = 'human';
+                toggleModeBtn.textContent = 'Play Against AI'; // Button text to switch back to AI mode
+                aiLevelSelect.parentElement.style.display = 'none'; // Hide AI level control
+                showMessageBox('Game Mode', 'Switched to Two-Player Mode. Player 1 (X) goes first, then Player 2 (O)!');
+            } else {
+                gameMode = 'ai';
+                toggleModeBtn.textContent = 'Two-Player Mode'; // Button text to switch back to Two-Player mode
+                aiLevelSelect.parentElement.style.display = 'flex'; // Show AI level control
+                showMessageBox('Game Mode', 'Switched to Play Against AI. You (X) go first, then the computer (O) will play!');
+            }
+            initGame(); // Restart game with new mode
+        }
+
+        // --- Event Listeners ---
+        newGameBtn.addEventListener('click', initGame);
+        toggleModeBtn.addEventListener('click', toggleGameMode);
+        playerNameInput.addEventListener('input', handlePlayerNameChange);
+        aiLevelSelect.addEventListener('change', handleAILevelChange);
+        themeToggleBtn.addEventListener('click', toggleTheme);
+
+        // Mobile Menu Event Listeners
+        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+        mobileCloseBtn.addEventListener('click', toggleMobileMenu);
+        window.addEventListener('resize', handleResize); // Adjust layout on resize
+
+        // Initial setup when the page loads
+        window.onload = function() {
+            loadThemePreference();
+            populateAILevelSelect();
+            initGame();
+            updateStatsDisplay();
+            // Ensure AI level control visibility matches initial game mode
+            if (gameMode === 'human') {
+                aiLevelSelect.parentElement.style.display = 'none';
+            } else {
+                aiLevelSelect.parentElement.style.display = 'flex';
+            }
+            handleResize(); // Call on load to set initial mobile visibility
+        };
+    </script>
+</body>
+</html>
