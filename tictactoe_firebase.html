@@ -60,7 +60,8 @@
             background-color: var(--bg-primary);
             color: var(--text-primary);
             padding: 20px;
-            overflow-x: hidden;
+            overflow-x: hidden; /* Prevent horizontal scroll from panels */
+            overflow-y: auto; /* Allow vertical scrolling if content overflows */
             transition: background-color 0.3s ease;
         }
 
@@ -70,7 +71,7 @@
             flex-direction: row; /* Default to row for wider screens */
             gap: 20px;
             align-items: flex-start;
-            max-width: 1200px;
+            max-width: 1200px; /* Overall max width for the desktop layout */
             width: 100%;
             justify-content: center;
             flex-grow: 1;
@@ -101,7 +102,8 @@
             padding: 30px;
             text-align: center;
             flex-grow: 1;
-            width: auto;
+            width: auto; /* Let content determine width, constrained by max-width */
+            max-width: 500px; /* Adjusted max width for better laptop fit */
             transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
@@ -165,9 +167,10 @@
             background-color: var(--bg-tertiary);
             border-radius: 8px;
             overflow: hidden;
-            max-width: 95vw;
-            height: auto;
+            width: 100%; /* Take 100% of parent's available width */
+            aspect-ratio: 1 / 1; /* Maintain square aspect ratio */
             transition: background-color 0.3s ease;
+            /* grid-template-columns/rows and font-size set by JS dynamically */
         }
 
         .cell {
@@ -308,7 +311,6 @@
         }
         .theme-toggle-btn:hover {
             background-color: var(--accent-blue-hover);
-            color: white;
         }
         .theme-toggle-btn svg {
             width: 100%;
@@ -422,13 +424,6 @@
             position: relative; /* For absolute positioning of game title */
         }
 
-        .mobile-game-title {
-            font-size: 1.8rem;
-            color: var(--text-primary);
-            text-align: center;
-            flex-grow: 1; /* Allow title to take space */
-        }
-
         .mobile-panel-toggles {
             display: none; /* Hidden by default */
             width: 100%;
@@ -511,20 +506,20 @@
                 display: block; /* Make visible on mobile */
             }
 
-            /* Hide desktop panels */
+            /* Mobile panels are fixed overlays */
             .left-panel, .right-panel {
-                /* Changed from display: none; */
-                display: flex; /* Ensure it's a flex container for its content */
+                display: flex; /* Always flex on mobile for content layout */
                 position: fixed;
                 top: 0;
                 height: 100%;
                 width: 280px; /* Fixed width for slide-out panels */
                 padding-top: 60px; /* Space for the mobile header */
                 z-index: 999;
-                transition: transform 0.3s ease-out, visibility 0.3s ease-out, opacity 0.3s ease-out; /* Added visibility and opacity transitions */
+                /* Transition for transform, opacity, and visibility */
+                transition: transform 0.3s ease-out, opacity 0.3s ease-out;
                 box-shadow: 0 0 15px var(--shadow-color);
-                visibility: hidden; /* Start hidden */
                 opacity: 0; /* Start transparent */
+                pointer-events: none; /* Disable interaction when hidden */
             }
 
             .left-panel {
@@ -533,8 +528,8 @@
             }
             .left-panel.visible {
                 transform: translateX(0);
-                visibility: visible; /* Make visible */
                 opacity: 1; /* Make opaque */
+                pointer-events: auto; /* Enable interaction */
             }
 
             .right-panel {
@@ -543,13 +538,13 @@
             }
             .right-panel.visible {
                 transform: translateX(0);
-                visibility: visible; /* Make visible */
                 opacity: 1; /* Make opaque */
+                pointer-events: auto; /* Enable interaction */
             }
 
             .game-container {
-                width: 90%;
-                max-width: 450px;
+                width: 90%; /* Take 90% width on mobile */
+                max-width: 450px; /* Limit max width */
                 margin-top: 20px; /* Space from mobile toggles */
             }
             h1 {
@@ -559,7 +554,7 @@
                 font-size: 1.2rem;
             }
             .board {
-                max-width: 95vw;
+                max-width: 95vw; /* Ensure board itself doesn't exceed viewport width */
                 height: auto;
             }
             .cell {
@@ -591,7 +586,7 @@
     <div class="main-layout">
         <!-- Mobile-only Header Controls (for game title) -->
         <div class="mobile-header-controls" id="mobile-header-controls">
-            <h2 class="mobile-game-title">Tic-Tac-Toe</h2>
+            <!-- Removed duplicate h2 for Tic-Tac-Toe title. Main h1 below serves this purpose. -->
         </div>
 
         <!-- Mobile Panel Toggle Buttons (visible on mobile, above game-container) -->
@@ -706,8 +701,9 @@
         let aiLevel = 1;
         let boardSize = 3; // Will be determined by aiLevel
         const WIN_CONDITION_LENGTH = 3; // How many in a row to win (e.g., 3 for standard Tic-Tac-Toe)
-        const BASE_CELL_SIZE_PX = 110; // Base size for a 3x3 cell
-        const CELL_SIZE_DECREMENT_PER_LEVEL = 10; // How much smaller cells get for larger boards
+        // BASE_CELL_SIZE_PX and CELL_SIZE_DECREMENT_PER_LEVEL are now primarily for font scaling guidance
+        const BASE_CELL_SIZE_PX = 110;
+        const CELL_SIZE_DECREMENT_PER_LEVEL = 10;
 
         let stats = { wins: 0, losses: 0, draws: 0 };
         let activePanel = null; // Tracks which panel is currently open ('left' or 'right')
@@ -778,31 +774,25 @@
         }
 
         /**
-         * Calculates the cell size based on the board size.
-         */
-        function getCellSizeForBoard(currentBoardSize) {
-            return BASE_CELL_SIZE_PX - (currentBoardSize - 3) * CELL_SIZE_DECREMENT_PER_LEVEL;
-        }
-
-        /**
          * Applies dynamic cell and board sizing based on current boardSize.
          */
         function applyDynamicBoardStyles() {
-            const currentCellSize = getCellSizeForBoard(boardSize);
-            const gap = 8; // Consistent gap in pixels
-            const boardDimension = (currentCellSize * boardSize) + (gap * (boardSize - 1));
+            // Board width is now handled by CSS (width: 100%, aspect-ratio: 1/1)
+            // We only need to set grid template and font size based on actual rendered size
+            boardElement.style.gridTemplateColumns = `repeat(${boardSize}, 1fr)`;
+            boardElement.style.gridTemplateRows = `repeat(${boardSize}, 1fr)`;
 
-            boardElement.style.width = `${boardDimension}px`;
-            boardElement.style.height = `${boardDimension}px`;
-            boardElement.style.gridTemplateColumns = `repeat(${boardSize}, ${currentCellSize}px)`;
-            boardElement.style.gridTemplateRows = `repeat(${boardSize}, ${currentCellSize}px)`;
+            // Calculate actual cell size after the board has rendered and its width is determined by CSS
+            // This needs a slight delay or to be called after DOM update, but for now, offsetWidth should be fine.
+            const actualBoardWidth = boardElement.offsetWidth;
+            const actualCellSize = (actualBoardWidth - (8 * (boardSize - 1))) / boardSize; /* Account for gap */
 
             document.querySelectorAll('.cell').forEach(cell => {
-                cell.style.fontSize = `${currentCellSize * 0.6}px`;
+                // Scale font size based on the actual cell size
+                cell.style.fontSize = `${actualCellSize * 0.6}px`;
             });
 
-            const gameContainer = document.querySelector('.game-container');
-            gameContainer.style.maxWidth = `${boardDimension + 60}px`;
+            // The gameContainer's max-width is now fixed in CSS, no longer dynamically set here
         }
 
         // --- Game Logic ---
@@ -826,6 +816,7 @@
                 boardElement.appendChild(cell);
             }
 
+            // Call applyDynamicBoardStyles after cells are added to ensure offsetWidth is accurate
             applyDynamicBoardStyles();
 
             if (gameMode === 'ai' && currentPlayer === 'O') {
@@ -1127,8 +1118,18 @@
 
             if (window.innerWidth > 768) {
                 // Desktop view: ensure panels are visible, mobile toggles are hidden
-                if (leftPanel) leftPanel.classList.add('visible');
-                if (rightPanel) rightPanel.classList.add('visible');
+                if (leftPanel) {
+                    leftPanel.classList.add('visible');
+                    leftPanel.style.transform = ''; /* Remove mobile transform */
+                    leftPanel.style.opacity = ''; /* Remove mobile opacity */
+                    leftPanel.style.pointerEvents = ''; /* Remove mobile pointer-events */
+                }
+                if (rightPanel) {
+                    rightPanel.classList.add('visible');
+                    rightPanel.style.transform = ''; /* Remove mobile transform */
+                    rightPanel.style.opacity = ''; /* Remove mobile opacity */
+                    rightPanel.style.pointerEvents = ''; /* Remove mobile pointer-events */
+                }
                 if (mobileHeaderControls) mobileHeaderControls.style.display = 'none';
                 if (mobilePanelToggles) mobilePanelToggles.style.display = 'none';
                 if (panelOverlay) panelOverlay.classList.remove('visible'); // Hide overlay
@@ -1136,24 +1137,35 @@
                 gameActive = true; // Ensure game is active
             } else {
                 // Mobile view: hide panels by default, show mobile toggles
-                // Panels are now always `display: flex` but visually hidden/off-screen
-                if (leftPanel) leftPanel.classList.remove('visible');
-                if (rightPanel) rightPanel.classList.remove('visible');
+                if (leftPanel) {
+                    leftPanel.classList.remove('visible'); // Ensure it's not visible initially
+                }
+                if (rightPanel) {
+                    rightPanel.classList.remove('visible'); // Ensure it's not visible initially
+                }
+
                 if (mobileHeaderControls) mobileHeaderControls.style.display = 'flex';
                 if (mobilePanelToggles) mobilePanelToggles.style.display = 'flex';
-                // If a panel was open, keep it open, otherwise ensure game is active
+
+                // If a panel was open, re-open it to maintain state on resize
                 if (activePanel === 'left') {
-                    if (leftPanel) leftPanel.classList.add('visible');
+                    if (leftPanel) {
+                        leftPanel.classList.add('visible');
+                    }
                     if (panelOverlay) panelOverlay.classList.add('visible');
                     gameActive = false;
                 } else if (activePanel === 'right') {
-                    if (rightPanel) rightPanel.classList.add('visible');
+                    if (rightPanel) {
+                        rightPanel.classList.add('visible');
+                    }
                     if (panelOverlay) panelOverlay.classList.add('visible');
                     gameActive = false;
                 } else {
                     gameActive = true;
                 }
             }
+            // Re-apply board styles on resize to ensure correct scaling
+            applyDynamicBoardStyles();
         }
 
 
@@ -1174,12 +1186,10 @@
             if (gameMode === 'ai') {
                 gameMode = 'human';
                 toggleModeBtn.textContent = 'Play Against AI';
-                // aiLevelSelect.parentElement.style.display = 'none'; // This is handled by handleResize
                 showMessageBox('Game Mode', 'Switched to Two-Player Mode. Player 1 (X) goes first, then Player 2 (O)!');
             } else {
                 gameMode = 'ai';
                 toggleModeBtn.textContent = 'Two-Player Mode';
-                // aiLevelSelect.parentElement.style.display = 'flex'; // This is handled by handleResize
                 showMessageBox('Game Mode', 'Switched to Play Against AI. You (X) go first, then the computer (O) will play!');
             }
             initGame(); // Restart game with new mode
@@ -1214,7 +1224,7 @@
             } else {
                 aiLevelSelect.parentElement.style.display = 'flex';
             }
-            handleResize(); // Call on load to set initial mobile visibility
+            handleResize(); // Call on load to set initial mobile visibility and board size
         };
     </script>
 </body>
