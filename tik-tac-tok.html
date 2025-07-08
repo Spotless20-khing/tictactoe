@@ -54,7 +54,7 @@
             font-family: 'Inter', sans-serif;
             display: flex;
             flex-direction: column;
-            justify-content: space-between; /* Changed to space-between for footer */
+            justify-content: center;
             align-items: center;
             min-height: 100vh;
             background-color: var(--bg-primary);
@@ -73,7 +73,6 @@
             max-width: 1200px; /* Max width for the entire layout */
             width: 100%;
             justify-content: center;
-            flex-grow: 1; /* Allow main content to grow and push footer down */
         }
 
         /* Side Panels */
@@ -142,8 +141,7 @@
         .player-info input[type="text"]:focus {
             outline: none;
             border-color: var(--accent-blue-hover);
-            /* Using rgba with CSS variables for RGB values is tricky without JS, hardcoding for simplicity */
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+            box-shadow: 0 0 0 3px rgba(var(--accent-blue-rgb), 0.5); /* Use RGB for rgba */
         }
 
         .stats {
@@ -205,7 +203,7 @@
         }
 
         /* Buttons & Controls */
-        .controls-group {
+        .controls-group { /* Renamed from .controls to avoid conflict with .message-box-buttons */
             display: flex;
             flex-direction: column; /* Stack buttons vertically in side panel */
             gap: 15px;
@@ -286,36 +284,25 @@
 
         .control-group select:focus {
             border-color: var(--accent-blue-hover);
-            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+            box-shadow: 0 0 0 3px rgba(var(--accent-blue-rgb), 0.5);
         }
 
-        /* Theme Toggle Button (Icon Button) */
+        /* Theme Toggle Button */
         .theme-toggle-btn {
             background-color: var(--bg-tertiary);
             color: var(--text-primary);
             border: 1px solid var(--border-color);
-            padding: 10px; /* Adjusted padding for icon */
-            border-radius: 50%; /* Make it round */
-            font-size: 1.5rem; /* Icon size */
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 1rem;
             cursor: pointer;
             transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-            width: 50px; /* Fixed width for round button */
-            height: 50px; /* Fixed height for round button */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 2px 4px var(--shadow-color);
+            margin-top: 20px; /* Space from other controls */
         }
         .theme-toggle-btn:hover {
             background-color: var(--accent-blue-hover);
             color: white;
         }
-        .theme-toggle-btn svg {
-            width: 100%;
-            height: 100%;
-            fill: currentColor; /* Use button's text color for SVG */
-        }
-
 
         /* Message Box Styling */
         .message-box-overlay {
@@ -398,99 +385,19 @@
             background-color: var(--accent-blue-hover);
         }
 
-        /* Mobile-specific layout and toggles */
-        .mobile-header-controls {
-            display: none; /* Hidden by default */
-            width: 100%;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            margin-bottom: 10px;
-        }
-
-        .mobile-menu-btn, .mobile-close-btn {
-            background: none;
-            border: none;
-            color: var(--text-primary);
-            font-size: 2rem;
-            cursor: pointer;
-            padding: 5px;
-            border-radius: 5px;
-            transition: background-color 0.2s ease;
-        }
-
-        .mobile-menu-btn:hover, .mobile-close-btn:hover {
-            background-color: var(--bg-tertiary);
-        }
-
-        .mobile-close-btn {
-            display: none; /* Hidden until menu is open */
-        }
-
-        .side-panels-wrapper {
-            display: flex;
-            flex-direction: row; /* Default for desktop */
-            gap: 20px;
-            width: 100%;
-            justify-content: center;
-        }
-
-        /* Footer Styles */
-        .footer {
-            margin-top: 40px; /* Space above the footer */
-            padding: 20px;
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            background-color: var(--bg-secondary);
-            width: 100%;
-            box-shadow: 0 -2px 5px var(--shadow-color);
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
-        }
-
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .main-layout {
                 flex-direction: column; /* Stack panels vertically on smaller screens */
                 align-items: center;
-                gap: 0; /* Remove gap when stacked */
             }
-
-            .mobile-header-controls {
-                display: flex; /* Show mobile controls */
-            }
-
-            .side-panels-wrapper {
-                flex-direction: column; /* Stack side panels */
-                display: none; /* Hidden by default on mobile */
-                width: 100%;
-                gap: 20px;
-                /* Position overlay for panels when open */
-                position: fixed;
-                top: 0;
-                left: 0;
-                height: 100%;
-                background-color: var(--bg-primary); /* Use primary background for full screen overlay */
-                z-index: 999; /* Below message box, above game */
-                overflow-y: auto; /* Enable scrolling if content overflows */
-                padding-top: 60px; /* Space for the mobile header */
-                justify-content: flex-start; /* Align content to top */
-            }
-
-            .side-panels-wrapper.visible {
-                display: flex; /* Show when toggled */
-            }
-
             .left-panel, .right-panel {
                 width: 90%; /* Take more width on small screens */
                 max-width: 450px; /* Limit max width */
-                box-shadow: 0 5px 10px var(--shadow-color); /* Add shadow back */
             }
-
             .game-container {
                 width: 90%;
                 max-width: 450px;
-                margin-top: 20px; /* Space from panels if they are visible */
             }
             h1 {
                 font-size: 2rem;
@@ -499,11 +406,11 @@
                 font-size: 1.2rem;
             }
             .board {
-                max-width: 95vw;
+                max-width: 95vw; /* Ensure board fits even if very large */
                 height: auto;
             }
             .cell {
-                min-width: 60px;
+                min-width: 60px; /* Ensure cells are not too small */
                 min-height: 60px;
             }
             .btn {
@@ -511,7 +418,7 @@
                 padding: 10px 20px;
             }
             .controls-group, .control-group {
-                flex-direction: column;
+                flex-direction: column; /* Stack controls vertically */
                 align-items: center;
                 gap: 10px;
             }
@@ -519,75 +426,55 @@
                 width: 100%;
                 max-width: 250px;
             }
-
-            .footer {
-                margin-top: 20px; /* Less margin on mobile */
-                padding: 15px;
-            }
         }
     </style>
 </head>
 <body>
     <div class="main-layout">
-        <div class="mobile-header-controls">
-            <button class="mobile-menu-btn" id="mobile-menu-btn">☰</button>
-            <h2 style="font-size: 1.8rem; color: var(--text-primary);">Tic-Tac-Toe</h2>
-            <button class="mobile-close-btn" id="mobile-close-btn">✕</button>
+        <div class="left-panel">
+            <div class="player-info">
+                <label for="player-name-input">Your Name:</label>
+                <input type="text" id="player-name-input" placeholder="Enter your name" value="Player">
+                <div class="stats" id="player-stats">
+                    Wins: <span>0</span> | Losses: <span>0</span> | Draws: <span>0</span>
+                </div>
+            </div>
+            <button class="theme-toggle-btn" id="theme-toggle-btn">Toggle Dark/Light Mode</button>
         </div>
 
-        <div class="side-panels-wrapper" id="side-panels-wrapper">
-            <div class="left-panel">
-                <div class="player-info">
-                    <label for="player-name-input">Your Name:</label>
-                    <input type="text" id="player-name-input" placeholder="Enter your name" value="Player">
-                    <div class="stats" id="player-stats">
-                        Wins: <span>0</span> | Losses: <span>0</span> | Draws: <span>0</span>
-                    </div>
-                </div>
-                <button class="theme-toggle-btn" id="theme-toggle-btn">
-                    <svg id="sun-icon" style="display: none;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.472 4.547a.75.75 0 0 1 1.06 0.943l-1.472 1.472a.75.75 0 0 1-.943-1.06l1.472-1.472ZM4.5 12a.75.75 0 0 1-.75-.75h-2.25a.75.75 0 0 1 0-1.5H3.75A.75.75 0 0 1 4.5 12ZM12 18.75a.75.75 0 0 1-.75-.75v-2.25a.75.75 0 0 1 1.5 0v2.25a.75.75 0 0 1-.75.75ZM16.528 19.453a.75.75 0 0 1-1.06 0.943l1.472 1.472a.75.75 0 0 1 .943-1.06l-1.472-1.472ZM18.75 12a.75.75 0 0 1 .75-.75h2.25a.75.75 0 0 1 0-1.5h-2.25a.75.75 0 0 1-.75.75ZM16.528 4.547a.75.75 0 0 1 0-1.06l1.472-1.472a.75.75 0 0 1 1.06 0.943l-1.472 1.472ZM12 7.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9Z" />
-                    </svg>
-                    <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-                        <path fill-rule="evenodd" d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9c.441 0 .873.067 1.288.192a.75.75 0 0 1 .819.162.75.75 0 0 0 .655-.196 2.25 2.25 0 0 1 2.366-3.081q.03-.028.062-.058A8.967 8.967 0 0 0 18 9a9 9 0 0 0-8.472-7.282Z" clip-rule="evenodd" />
-                    </svg>
-                </button>
+        <div class="game-container">
+            <h1>Tic-Tac-Toe</h1>
+            <div class="message" id="game-message">X's Turn</div>
+            <div class="board" id="game-board">
+                <!-- Cells will be dynamically generated by JavaScript -->
             </div>
+        </div>
 
-            <div class="game-container">
-                <h1>Tic-Tac-Toe</h1>
-                <div class="message" id="game-message">X's Turn</div>
-                <div class="board" id="game-board">
-                    </div>
-            </div>
-
-            <div class="right-panel">
-                <div class="controls-group">
-                    <button class="btn" id="new-game-btn">New Game</button>
-                    <button class="btn" id="toggle-mode-btn">Play Against AI</button>
-                    <div class="control-group" id="ai-level-control">
-                        <label for="ai-level-select">AI Level:</label>
-                        <select id="ai-level-select">
-                            </select>
-                    </div>
+        <div class="right-panel">
+            <div class="controls-group">
+                <button class="btn" id="new-game-btn">New Game</button>
+                <button class="btn" id="toggle-mode-btn">Play Against AI</button>
+                <div class="control-group" id="ai-level-control">
+                    <label for="ai-level-select">AI Level:</label>
+                    <select id="ai-level-select">
+                        <!-- Options will be generated by JS -->
+                    </select>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- Custom Message Box for Alerts -->
     <div class="message-box-overlay" id="message-box-overlay">
         <div class="message-box">
             <h3 id="message-box-title"></h3>
             <p id="message-box-content"></p>
             <div class="message-box-buttons" id="message-box-buttons">
+                <!-- Buttons will be dynamically added here -->
                 <button id="message-box-ok-btn">OK</button>
             </div>
         </div>
     </div>
-
-    <footer class="footer">
-        <p>&copy; 2023 Khing Spotless. All rights reserved.</p>
-    </footer>
 
     <script>
         // --- DOM Elements ---
@@ -598,23 +485,13 @@
         const playerNameInput = document.getElementById('player-name-input');
         const playerStatsElement = document.getElementById('player-stats');
         const aiLevelSelect = document.getElementById('ai-level-select');
-        const themeToggleBtn = document.getElementById('theme-toggle-btn');
-
-        // Mobile Layout Elements
-        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-        const mobileCloseBtn = document.getElementById('mobile-close-btn');
-        const sidePanelsWrapper = document.getElementById('side-panels-wrapper');
-        // No need for direct references to leftPanel, rightPanel as they are children of sidePanelsWrapper
+        const themeToggleBtn = document.getElementById('theme-toggle-btn'); // New DOM element
 
         // Message Box Elements
         const messageBoxOverlay = document.getElementById('message-box-overlay');
         const messageBoxTitle = document.getElementById('message-box-title');
         const messageBoxContent = document.getElementById('message-box-content');
         const messageBoxButtonsContainer = document.getElementById('message-box-buttons');
-
-        // Theme Icons
-        const sunIcon = document.getElementById('sun-icon');
-        const moonIcon = document.getElementById('moon-icon');
 
         // --- Game State Variables ---
         let board = []; // Will be dynamically sized
@@ -629,7 +506,6 @@
         const CELL_SIZE_DECREMENT_PER_LEVEL = 10; // How much smaller cells get for larger boards
 
         let stats = { wins: 0, losses: 0, draws: 0 };
-        let isMobileMenuOpen = false; // State for mobile panel visibility
 
         // --- Utility Functions ---
 
@@ -682,6 +558,8 @@
          * @returns {number} - Probability of making a random move (0.0 to 1.0).
          */
         function getMistakeChance(level) {
+            // Level 1: 50% mistake chance (very easy)
+            // Level 20: 0% mistake chance (perfect AI)
             return Math.max(0, 0.5 - (level - 1) * (0.5 / 19));
         }
 
@@ -720,7 +598,10 @@
                 cell.style.fontSize = `${currentCellSize * 0.6}px`;
             });
 
+            // Adjust max-width of the overall game container to fit the new board size
             const gameContainer = document.querySelector('.game-container');
+            // This max-width is for the game-container itself, not the main-layout
+            // The main-layout will handle overall responsiveness
             gameContainer.style.maxWidth = `${boardDimension + 60}px`;
         }
 
@@ -747,8 +628,6 @@
 
             applyDynamicBoardStyles();
 
-            // AI will only move if it's its turn (O) and in AI mode
-            // Since initGame always sets currentPlayer to 'X', AI won't move first on a fresh game.
             if (gameMode === 'ai' && currentPlayer === 'O') {
                 setTimeout(aiMove, 500);
             }
@@ -762,8 +641,7 @@
             const clickedCell = event.target;
             const clickedCellIndex = parseInt(clickedCell.dataset.cellIndex);
 
-            // Prevent moves if game is not active or if mobile menu is open
-            if (board[clickedCellIndex] !== '' || !gameActive || isMobileMenuOpen || (gameMode === 'ai' && currentPlayer === 'O')) {
+            if (board[clickedCellIndex] !== '' || !gameActive) {
                 return;
             }
 
@@ -816,6 +694,11 @@
         /**
          * Checks if a specific player has won on a given board state for any N x N board.
          * Checks horizontal, vertical, and diagonal lines for WIN_CONDITION_LENGTH consecutive marks.
+         * @param {Array<string>} currentBoard - The board state (1D array).
+         * @param {string} player - The player ('X' or 'O') to check for a win.
+         * @param {number} currentBoardSize - The N dimension of the N x N board.
+         * @param {number} winLength - The number of consecutive marks needed to win (e.g., 3).
+         * @returns {boolean} - True if the player wins, false otherwise.
          */
         function checkWin(currentBoard, player, currentBoardSize, winLength) {
             const getCell = (r, c) => currentBoard[r * currentBoardSize + c];
@@ -885,6 +768,8 @@
 
         /**
          * Checks if the game is a draw (all cells filled, no winner).
+         * @param {Array<string>} currentBoard - The board state to check.
+         * @returns {boolean} - True if it's a draw, false otherwise.
          */
         function checkDraw(currentBoard) {
             return currentBoard.every(cell => cell !== '');
@@ -963,24 +848,14 @@
         }
 
         // --- Theme Toggle Logic ---
-        function updateThemeIcons() {
-            if (document.body.classList.contains('light-mode')) {
-                sunIcon.style.display = 'block';
-                moonIcon.style.display = 'none';
-            } else {
-                sunIcon.style.display = 'none';
-                moonIcon.style.display = 'block';
-            }
-        }
-
         function toggleTheme() {
             document.body.classList.toggle('light-mode');
+            // Save preference to localStorage (optional, but nice for persistence)
             if (document.body.classList.contains('light-mode')) {
                 localStorage.setItem('theme', 'light');
             } else {
                 localStorage.setItem('theme', 'dark');
             }
-            updateThemeIcons(); // Update icons after toggling theme
         }
 
         function loadThemePreference() {
@@ -988,49 +863,9 @@
             if (savedTheme === 'light') {
                 document.body.classList.add('light-mode');
             } else {
-                document.body.classList.remove('light-mode');
-            }
-            updateThemeIcons(); // Set initial icon based on loaded theme
-        }
-
-        // --- Mobile Menu Toggle Logic ---
-        function toggleMobileMenu() {
-            isMobileMenuOpen = !isMobileMenuOpen;
-            if (isMobileMenuOpen) {
-                sidePanelsWrapper.classList.add('visible');
-                mobileMenuBtn.style.display = 'none';
-                mobileCloseBtn.style.display = 'block';
-                gameActive = false; // Temporarily disable game when menu is open
-            } else {
-                sidePanelsWrapper.classList.remove('visible');
-                mobileMenuBtn.style.display = 'block';
-                mobileCloseBtn.style.display = 'none';
-                gameActive = true; // Re-enable game when menu is closed
+                document.body.classList.remove('light-mode'); // Default to dark if no preference or 'dark'
             }
         }
-
-        function handleResize() {
-            // If screen is wide enough, ensure panels are always visible and mobile controls are hidden
-            if (window.innerWidth > 768) {
-                sidePanelsWrapper.classList.add('visible'); // Ensure panels are visible on desktop
-                mobileMenuBtn.style.display = 'none';
-                mobileCloseBtn.style.display = 'none';
-                isMobileMenuOpen = false; // Reset mobile menu state
-                gameActive = true; // Ensure game is active on desktop
-            } else {
-                // On mobile, control visibility via toggle state
-                if (isMobileMenuOpen) {
-                     sidePanelsWrapper.classList.add('visible');
-                     mobileMenuBtn.style.display = 'none';
-                     mobileCloseBtn.style.display = 'block';
-                } else {
-                     sidePanelsWrapper.classList.remove('visible');
-                     mobileMenuBtn.style.display = 'block';
-                     mobileCloseBtn.style.display = 'none';
-                }
-            }
-        }
-
 
         // --- Event Handlers ---
 
@@ -1046,19 +881,18 @@
         }
 
         function toggleGameMode() {
-            // Toggle the gameMode state
             if (gameMode === 'ai') {
                 gameMode = 'human';
-                toggleModeBtn.textContent = 'Play Against AI'; // Button text to switch back to AI mode
+                toggleModeBtn.textContent = 'Play Against AI';
                 aiLevelSelect.parentElement.style.display = 'none'; // Hide AI level control
-                showMessageBox('Game Mode', 'Switched to Two-Player Mode. Player 1 (X) goes first, then Player 2 (O)!');
+                showMessageBox('Game Mode', 'Switched to Two-Player Mode. Now you and a friend can play!');
             } else {
                 gameMode = 'ai';
-                toggleModeBtn.textContent = 'Two-Player Mode'; // Button text to switch back to Two-Player mode
+                toggleModeBtn.textContent = 'Two-Player Mode';
                 aiLevelSelect.parentElement.style.display = 'flex'; // Show AI level control
-                showMessageBox('Game Mode', 'Switched to Play Against AI. You (X) go first, then the computer (O) will play!');
+                showMessageBox('Game Mode', 'Switched to Play Against AI. Try to beat the computer!');
             }
-            initGame(); // Restart game with new mode
+            initGame();
         }
 
         // --- Event Listeners ---
@@ -1066,26 +900,17 @@
         toggleModeBtn.addEventListener('click', toggleGameMode);
         playerNameInput.addEventListener('input', handlePlayerNameChange);
         aiLevelSelect.addEventListener('change', handleAILevelChange);
-        themeToggleBtn.addEventListener('click', toggleTheme);
-
-        // Mobile Menu Event Listeners
-        mobileMenuBtn.addEventListener('click', toggleMobileMenu);
-        mobileCloseBtn.addEventListener('click', toggleMobileMenu);
-        window.addEventListener('resize', handleResize); // Adjust layout on resize
+        themeToggleBtn.addEventListener('click', toggleTheme); // New event listener for theme
 
         // Initial setup when the page loads
         window.onload = function() {
-            loadThemePreference();
+            loadThemePreference(); // Load theme on startup
             populateAILevelSelect();
             initGame();
             updateStatsDisplay();
-            // Ensure AI level control visibility matches initial game mode
             if (gameMode === 'human') {
                 aiLevelSelect.parentElement.style.display = 'none';
-            } else {
-                aiLevelSelect.parentElement.style.display = 'flex';
             }
-            handleResize(); // Call on load to set initial mobile visibility
         };
     </script>
 </body>

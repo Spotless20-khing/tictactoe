@@ -833,9 +833,14 @@
             const clickedCellIndex = parseInt(clickedCell.dataset.cellIndex);
 
             // Prevent moves if game is not active or if any mobile panel is open
-            if (board[clickedCellIndex] !== '' || !gameActive || activePanel !== null || (gameMode === 'ai' && currentPlayer === 'O')) {
+            // This check is for all clicks, including AI's simulated clicks.
+            if (board[clickedCellIndex] !== '' || !gameActive || activePanel !== null) {
                 return;
             }
+
+            // Removed the problematic line:
+            // if (gameMode === 'ai' && currentPlayer === 'O') { return; }
+            // This was preventing the AI's own clicks from being processed.
 
             board[clickedCellIndex] = currentPlayer;
             clickedCell.textContent = currentPlayer;
@@ -878,6 +883,7 @@
             currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
             messageElement.textContent = `${currentPlayer}'s Turn`;
 
+            // Only trigger AI move if it's AI's turn and game is active
             if (gameMode === 'ai' && currentPlayer === 'O' && gameActive) {
                 setTimeout(aiMove, 700);
             }
@@ -1093,6 +1099,11 @@
                 panelOverlay.classList.remove('visible');
                 activePanel = null;
                 gameActive = true; // Re-enable game interaction
+
+                // If it's AI's turn and game is active after closing panel, trigger AI move
+                if (gameMode === 'ai' && currentPlayer === 'O' && gameActive) {
+                    setTimeout(aiMove, 700);
+                }
             }
         }
 
